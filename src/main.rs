@@ -10,7 +10,10 @@ use blockchain::Blockchain;
 
 fn main() {
     let initial_blockchain = Blockchain::new();
-    let address = "127.0.0.1:8080".parse::<SocketAddr>().unwrap();
+    let address = "127.0.0.1:8080".parse::<SocketAddr>().unwrap_or_else(|_| {
+        eprintln!("Error al analizar la dirección del socket.");
+        std::process::exit(1);
+    });
     let mut node = Node::new(address, initial_blockchain);
     node.start();
 }

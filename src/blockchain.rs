@@ -25,7 +25,13 @@ impl Blockchain {
     pub fn add_block(&mut self) {
         let prev_block = self.blocks.last().unwrap().clone();
         let index = prev_block.index + 1;
-        let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis();
+        let timestamp = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+            Ok(n) => n.as_millis(),
+            Err(_) => {
+                eprintln!("Error al obtener el tiempo actual.");
+                return;
+            }
+        };
         let prev_hash = prev_block.hash.clone();
         let mut block = Block::new(index, timestamp, self.pending_transactions.clone(), prev_hash);
         block.nonce = proof_of_work(&block);

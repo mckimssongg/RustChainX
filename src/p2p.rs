@@ -17,12 +17,20 @@ impl Node {
     }
 
     pub fn start(&mut self) {
-        let listener = TcpListener::bind(&self.address).unwrap();
+        let listener = TcpListener::bind(&self.address).unwrap_or_else(|_| {
+            eprintln!("Error al enlazar el socket TCP.");
+            std::process::exit(1);
+        });
         for stream in listener.incoming() {
-            let blockchain = self.blockchain.clone();
-            thread::spawn(move || {
-                handle_client(stream.unwrap(), blockchain);
-            });
+            match stream {
+                Ok(s) => {
+                    let blockchain = self.blockchain.clone();
+                    thread::spawn(move || {
+                        handle_client(s, blockchain);
+                    });
+                }
+                Err(e) => eprintln!("Error al recibir un nuevo TcpStream: {}", e),
+            }
         }
     }
 }
@@ -41,14 +49,20 @@ fn handle_client(mut stream: TcpStream, mut blockchain: Blockchain) {
                     if let Ok(new_block) = serde_json::from_value::<Block>(msg["block"].clone()) {
                         let _transactions = new_block.transactions;
                         blockchain.add_block();
+                    } else {
+                        eprintln!("Error al deserializar el nuevo bloque.");
                     }
                 },
                 Some("transaction") => {
                     if let Ok(new_transaction) = serde_json::from_value::<Transaction>(msg["transaction"].clone()) {
                         blockchain.add_transaction(new_transaction);
+                    } else {
+                        eprintln!("Error al deserializar la nueva transacción.");
                     }
                 },
-                _ => {}
+                _ => {
+                    eprintln!("Tipo de mensaje desconocido.");
+                }
             }
         },
         Err(e) => {
