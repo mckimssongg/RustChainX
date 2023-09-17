@@ -1,19 +1,21 @@
+#[macro_use] extern crate rocket;
+
+mod api;
 mod blockchain;
 mod block;
 mod transaction;
 mod pow;
 mod p2p;
 
-use std::net::SocketAddr;
-use p2p::Node;
-use blockchain::Blockchain;
+use api::blocks::{get_last_block, add_block};
+use api::transactions::add_transaction;
+use std::sync::Mutex;
 
-fn main() {
-    let initial_blockchain = Blockchain::new();
-    let address = "127.0.0.1:8080".parse::<SocketAddr>().unwrap_or_else(|_| {
-        eprintln!("Error al analizar la dirección del socket.");
-        std::process::exit(1);
-    });
-    let mut node = Node::new(address, initial_blockchain);
-    node.start();
+#[launch]
+fn rocket() -> _ {
+    let initial_blockchain = Mutex::new(blockchain::Blockchain::new());
+
+    rocket::build()
+        .manage(initial_blockchain) 
+        .mount("/", routes![get_last_block, add_transaction, add_block])
 }

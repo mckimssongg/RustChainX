@@ -11,3 +11,4 @@ sha2 = "0.9"
 digest = "0.9"
 crypto = "0.2"
 serde_json = "1.0"
+rocket = { version = "=0.5.0-rc.3", features = ["json"] }

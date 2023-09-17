@@ -6,11 +6,13 @@ use crate::blockchain::Blockchain;
 use crate::transaction::Transaction;
 use crate::block::Block;
 
+#[allow(dead_code)]
 pub struct Node {
     pub address: SocketAddr,
     pub blockchain: Blockchain,
 }
 
+#[allow(dead_code)]
 impl Node {
     pub fn new(address: SocketAddr, blockchain: Blockchain) -> Self {
         Node { address, blockchain }
@@ -35,6 +37,7 @@ impl Node {
     }
 }
 
+#[allow(dead_code)]
 fn handle_client(mut stream: TcpStream, mut blockchain: Blockchain) {
     let mut buffer = [0; 1024];
     if let Err(e) = stream.read(&mut buffer) {
